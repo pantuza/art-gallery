@@ -8,6 +8,8 @@ from pymote.networkgenerator import NetworkGenerator
 from pymote.simulation import Simulation
 from pymote.conf import global_settings
 
+from dist_art_gallery import DistributedArtGallery
+
 
 # Do not show log
 logging.config.dictConfig({'version': 1,'loggers':{}})
@@ -43,12 +45,9 @@ print polygon
 net_gen = NetworkGenerator(n_count=n_nodes-1, n_min=1, n_max=n_nodes)
 net = net_gen.generate_random_network()
 
-from pymote.algorithm import Algorithm
-class DistributedArtGallery(Algorithm):
-    pass
 
 # Defines the network algorithm
-net.algorithms = ((DistributedArtGallery, {'informationKey':'axis'}),)
+net.algorithms = ((DistributedArtGallery, {'key':'axis'}),)
 
 
 i=0
