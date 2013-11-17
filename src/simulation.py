@@ -9,6 +9,7 @@ from pymote.simulation import Simulation
 from pymote.conf import global_settings
 
 from dist_art_gallery import DistributedArtGallery
+from window import Window
 
 
 # Do not show log
@@ -64,6 +65,8 @@ sim.run()
 # Show the State of the Voronoi Algorith execution
 #print net.algorithmState
 
+window = Window()
+window.set_title("Distributed Solution for Art Gallery Problem")
 
 # Plot voronoi diagram for each node
 for node in net.nodes():
