@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from vector import Vector
+from point import Point
 
 
 class Triangulation(object):
@@ -9,30 +9,35 @@ class Triangulation(object):
     # Used to verify if triangulation is counter clockwise
     EPSILON = 0.0000000001
 
-    def __init__(self, vectors):
-        self.vectors = vectors
+    def __init__(self, points):
 
-    # TODO: If the vectors come sorted then it is not necessary to calculate
+        if not isinstance(points, list):
+            raise TypeError("points must be a list")
+        elif not all(isinstance(point, Point) for point in points):
+            raise TypeError("elements of list must be Point objects")
+
+
+    # TODO: If the points come sorted then it is not necessary to calculate
     # the Area 
-    def area(self, vectors):
+    def area(self, points):
         """ Calculates the polygon area """
         
         area = 0
-        n = len(vectors)
+        n = len(points)
         p, q = n-1, 0
         
         while q < n:
-            area += vectors[p].x*vectors[q].y - vectors[q].x*vectors[p].y
+            area += points[p].x*points[q].y - points[q].x*points[p].y
             q += 1
             p=q
 
         return area*0.5
 
-    def process(self, vectors):
+    def process(self, points):
         """ Process and triangulates the polygon """
 
         # Minimum number of points to compose a triangle 
-        if len(vectors) < 3:
+        if len(points) < 3:
             return False
 
         # Counter Clockwise polygon TODO: Verify if is necessary. See def area
@@ -56,7 +61,7 @@ class Triangulation(object):
 
         return a_cross >= 0 and b_cross >= 0 and c_cross >= 0
 
-    def snip(self, vectors, triangle):
+    def snip(self, points, triangle):
         pass
 
 
