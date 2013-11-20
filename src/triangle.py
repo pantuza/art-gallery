@@ -7,6 +7,8 @@ class Triangle(object):
     """ Class representing a Triangle that is composed by
     three Point objects
     """
+    
+    MAX_POINTS = 3
 
     def __init__(self, u, v, w):
 
