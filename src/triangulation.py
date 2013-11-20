@@ -62,7 +62,12 @@ class Triangulation(object):
         return a_cross >= 0 and b_cross >= 0 and c_cross >= 0
 
     def snip(self, points, triangle):
-        pass
+        
+        oppos = (triangle.v.x - triangle.u.x) * (triangle.w.y - triangle.u.y)
+        adjac = (triangle.v.y - triangle.u.y) * (triangle.w.x - triangle.u.x)
+
+        if EPSILON > (oppos - adjac):
+            return False
 
 
 # Testing the class
