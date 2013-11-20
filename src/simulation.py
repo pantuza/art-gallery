@@ -10,6 +10,7 @@ from pymote.conf import global_settings
 
 from dist_art_gallery import DistributedArtGallery
 from window import Window
+from point import Point
 
 
 # Do not show log
@@ -36,8 +37,9 @@ with open(file_name, "r") as file:
     
     for line in file:
 
-        x, y = line.split()
-        polygon.append((int(x),int(y)))
+        id, x, y = line.split()
+        point = Point(id, x, y)
+        polygon.append(point)
 
 print polygon
 
