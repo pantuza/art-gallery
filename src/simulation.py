@@ -41,8 +41,6 @@ with open(file_name, "r") as file:
         point = Point(id, x, y)
         polygon.append(point)
 
-print polygon
-
 
 # generates the network with 10 hosts
 net_gen = NetworkGenerator(n_count=n_nodes-1, n_min=1, n_max=n_nodes)
@@ -56,7 +54,8 @@ net.algorithms = ((DistributedArtGallery, {'key':'axis'}),)
 i=0
 # Assign to node memory its position
 for node in net.nodes():
-    node.memory['axis'] = (int(polygon[i][0]), int(polygon[i][1]))
+
+    node.memory['axis'] = polygon[i]
     i += 1
 
 
