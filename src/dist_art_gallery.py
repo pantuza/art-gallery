@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from cPickle import dumps
+from cPickle import loads
+
 from pymote.algorithm import NodeAlgorithm
 from pymote.message import Message
 
@@ -53,19 +56,21 @@ class DistributedArtGallery(NodeAlgorithm):
 
     def procmsg(self, node, msg):
         """ Process incoming messages """
+        
+        # deserialize data from message 
+        rec_data = loads(msg.data)
 
         # If the message data (host position) is unknown
-        if msg.data not in node.points:
-
-            node.memory['neighbors_data'][msg.source.id] = msg.data
-            node.points.append(msg.data)
-            print node.id, msg.data
+        if rec_data not in node.points:
+            
+            node.memory['neighbors_data'][msg.source.id] = rec_data
+            node.points.append(rec_data)
 
             # adds new point and recalculates the positions of the guards
-            node.gallery.include(msg.data)
+            node.gallery.include(rec_data)
 
             # notifies the node neighbors about the message received
-            self.notify(node, msg.source, msg.data)
+            self.notify(node, msg.source, rec_data)
 
     def notify(self, node, source, data):
         """ Notify neighbors. Forwarding operation """
@@ -74,6 +79,6 @@ class DistributedArtGallery(NodeAlgorithm):
         for neighbor in node.memory[self.neighborsKey]:
 
             msg = Message(header=NodeAlgorithm.INI, source=source,
-                          destination=neighbor, data=data)
+                          destination=neighbor, data=dumps(data))
 
             node.send(msg)
