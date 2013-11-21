@@ -6,12 +6,7 @@ from cPickle import loads
 from pymote.algorithm import NodeAlgorithm
 from pymote.message import Message
 
-
-# TODO: This class is for test purpose
-class ArtGallery(object):
-
-    def include(self, data):
-        pass
+from art_gallery import ArtGallery
 
 
 class DistributedArtGallery(NodeAlgorithm):
@@ -32,7 +27,7 @@ class DistributedArtGallery(NodeAlgorithm):
 
             node.memory['neighbors_data'] = {}
             node.points = [node.memory['axis']]
-            node.gallery = ArtGallery()
+            node.gallery = ArtGallery(node.points)
 
             # Fills node neighbors and notify each one its axis
             node.memory[self.neighborsKey] = \
@@ -56,13 +51,13 @@ class DistributedArtGallery(NodeAlgorithm):
 
     def procmsg(self, node, msg):
         """ Process incoming messages """
-        
-        # deserialize data from message 
+
+        # deserialize data from message
         rec_data = loads(msg.data)
 
         # If the message data (host position) is unknown
         if rec_data not in node.points:
-            
+
             node.memory['neighbors_data'][msg.source.id] = rec_data
             node.points.append(rec_data)
 
