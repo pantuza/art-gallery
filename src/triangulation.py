@@ -19,53 +19,49 @@ class Triangulation(object):
 
         self.points = points
 
-    # TODO: If the points come sorted then it is not necessary to calculate
-    # the Area
-    def area(self):
-        """ Calculates the polygon area """
+    def _set_indexes(self, v, n_points):
+        """ Set indexes for triangulation based on v parameter """
 
-        area = 0
-        n = len(self.points)
-        p, q = n-1, 0
+        u = v
+        if u >= n_points:
+            u = 0
 
-        while q < n:
-            area += self.points[p].x * self.points[q].y \
-                    - self.points[q].x * self.points[p].y
-            q += 1
-            p = q
+        v = u + 1
+        if v >= n_points:
+            v = 0
 
-        return area*0.5
+        w = v + 1
+        if w >= n_points:
+            w = 0
+
+        return u, v, w
 
     def process(self):
         """ Process and triangulates the polygon """
-        import ipdb
-        ipdb.set_trace()
-        result = []
 
         # Minimum number of points to compose a triangle
         if len(self.points) < Triangle.MAX_POINTS:
             return False
 
-        n_points = len(self.points)
-        tmp_points = self.points[:]
-        i = n_points - 1
+        n_points = len(self.points)  # Controls the number of points
+        tmp_points = self.points[:]  # temporary list of points
 
-        loop_control = 2 * n_points
+        # controls the current triangle points inside the while statement
+        v = n_points - 1
 
-        while len(tmp_points) > Triangle.MAX_POINTS:
+        result = []
+        while n_points >= Triangle.MAX_POINTS:
 
-            if loop_control <= 0:
-                return Exception("Bla")
-                
+            u, v, w = self._set_indexes(v, n_points)
 
             # Creates a Triangle object with three consecutives Point objects
-            triangle = Triangle(tmp_points[i % n_points],
-                                tmp_points[(i+1) % n_points],
-                                tmp_points[(i+2) % n_points])
+            triangle = Triangle(tmp_points[u], tmp_points[v], tmp_points[w])
 
             if self.snip(tmp_points, triangle):
-                result.append(triangle)
-                tmp_points.remove(tmp_points[i+1])
+
+                result.append(triangle)  # Adding current triangle to result
+                tmp_points.remove(tmp_points[v])  # Removing current triangle
+                n_points -= 1
 
         del tmp_points
         return result
@@ -83,7 +79,7 @@ class Triangulation(object):
 
         a_cross = ax*bpy - ay*bpx
         b_cross = bx*cpy - by*cpx
-        c_cross = cx-apy - cy*apx
+        c_cross = cx*apy - cy*apx
 
         return a_cross >= 0 and b_cross >= 0 and c_cross >= 0
 
@@ -100,7 +96,7 @@ class Triangulation(object):
         for point in points:
             if point not in triangle and self.is_inside(point, triangle):
                 return False
-        return False
+        return True
 
 
 # Testing the class
@@ -124,8 +120,10 @@ if __name__ == "__main__":
 
     triangulation = Triangulation(points)
 
+    i = 1
     for triangle in triangulation.process():
-        print "Triangle %d => (%s, %s) (%s, %s) (%s, %s)" \
-              % (triangle.u.x, triangle.u.y,
+        print "Triangle %d => (%s,%s) (%s,%s) (%s,%s)" \
+              % (i, triangle.u.x, triangle.u.y,
                  triangle.v.x, triangle.v.y,
                  triangle.w.x, triangle.w.y)
+        i += 1
