@@ -4,18 +4,22 @@
 class Point(tuple):
     """ Represents a 2D point. Inherits built-in tuple """
 
-    def __new__(cls, id, x, y):
-        return tuple.__new__(cls, (int(id), int(x), int(y)))
+    def __new__(cls, num, x, y):
+        return tuple.__new__(cls, (int(num), int(x), int(y)))
 
-    def __init__(self, id, x, y):
-        super(Point, self).__init__(id, x, y)
-        self.id = id
+    def __init__(self, num, x, y):
+        super(Point, self).__init__(num, x, y)
+        self.id = num
         self.x = x
         self.y = y
+        self.color = 0
 
     def __repr__(self):
-        return "Point(tuple) Object - P%s=(%s, %s)" % (self.id, self.x, self.y)
+        return "Point(tuple) Object - P%s=(%s, %s) C=%s" % \
+               (self.id, self.x, self.y, self.color)
 
+    def get_pos(self):
+        return (self.x, self.y)
 
 # Testing class
 if __name__ == "__main__":
