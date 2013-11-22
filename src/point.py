@@ -9,9 +9,9 @@ class Point(tuple):
 
     def __init__(self, num, x, y):
         super(Point, self).__init__(num, x, y)
-        self.id = num
-        self.x = x
-        self.y = y
+        self.id = int(num)
+        self.x = int(x)
+        self.y = int(y)
         self.color = 0
 
     def __repr__(self):

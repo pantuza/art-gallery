@@ -147,9 +147,9 @@ class TestCases(object):
 if __name__ == '__main__':
 
     test = TestCases()
-    test.do_test("../inputs/test_0.poly")
-    test.do_test("../inputs/test_1.poly")
-    test.do_test("../inputs/test_2.poly")
-    test.do_test("../inputs/regular_0.poly", 20, 1, 0, 10)
-    test.do_test("../inputs/regular_1.poly", 5, 1, 0, 20)
-    test.do_test("../inputs/irregular_0.poly", 15, 1)
+    test.do_test("inputs/test_0.poly")
+    test.do_test("inputs/test_1.poly")
+    test.do_test("inputs/test_2.poly")
+    test.do_test("inputs/regular_0.poly", 20, 1, 0, 10)
+    test.do_test("inputs/regular_1.poly", 5, 1, 0, 20)
+    test.do_test("inputs/irregular_0.poly", 15, 1)
