@@ -34,12 +34,13 @@ with open(file_name, "r") as file:
 
     # Read the first line that contains the number of vertices
     n_nodes = int(file.readline())
-    
+    id = 0
     for line in file:
 
-        id, x, y = line.split()
+        x, y = line.split()
         point = Point(id, x, y)
         polygon.append(point)
+        id += 1
 
 
 # generates the network with 10 hosts
