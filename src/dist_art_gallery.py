@@ -26,8 +26,8 @@ class DistributedArtGallery(NodeAlgorithm):
         for node in self.network.nodes():
 
             node.memory['neighbors_data'] = {}
-            node.points = [node.memory['axis']]
-            node.gallery = ArtGallery(node.points)
+            node._polygon = [node.memory['axis']]
+            node.gallery = ArtGallery(node._polygon)
 
             # Fills node neighbors and notify each one its axis
             node.memory[self.neighborsKey] = \
@@ -56,10 +56,10 @@ class DistributedArtGallery(NodeAlgorithm):
         rec_data = loads(msg.data)
 
         # If the message data (host position) is unknown
-        if rec_data not in node.points:
+        if rec_data not in node._polygon:
 
             node.memory['neighbors_data'][msg.source.id] = rec_data
-            node.points.append(rec_data)
+            node._polygon.append(rec_data)
 
             # adds new point and recalculates the positions of the guards
             node.gallery.include(rec_data)
