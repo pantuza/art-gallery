@@ -7,6 +7,7 @@ from pymote.algorithm import NodeAlgorithm
 from pymote.message import Message
 
 from art_gallery import ArtGallery
+from preview_control import PreviewControl
 
 
 class DistributedArtGallery(NodeAlgorithm):
@@ -27,7 +28,8 @@ class DistributedArtGallery(NodeAlgorithm):
 
             node.memory['neighbors_data'] = {}
             node._polygon = [node.memory['axis']]
-            node.gallery = ArtGallery(node._polygon)
+            node.gallery = ArtGallery(node.memory['axis'])
+            PreviewControl.add_view(node.gallery, str(node.id))
 
             # Fills node neighbors and notify each one its axis
             node.memory[self.neighborsKey] = \
