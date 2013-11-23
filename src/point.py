@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 class Point(tuple):
     """ Represents a 2D point. Inherits built-in tuple """
 
@@ -15,8 +14,7 @@ class Point(tuple):
         self.color = 0
 
     def __repr__(self):
-        return "Point(tuple) Object - P%s=(%s, %s) C=%s" % \
-               (self.id, self.x, self.y, self.color)
+        return "(%s, %s)" % (self.x, self.y)
 
     def get_pos(self):
         return (self.x, self.y)

@@ -2,7 +2,7 @@
 
 from point import Point
 from triangle import Triangle
-
+from side import Side
 
 class Triangulation(object):
     """ Class that triangulates polygons with no hole """
@@ -18,7 +18,83 @@ class Triangulation(object):
             raise TypeError("elements of list must be Point objects")
 
         self._polygon = points
-        self._diagonals = []
+        self._clean()
+
+    def _clean(self):
+        self._diagonals = {}
+        self._sides = {}
+        #self._triangles = []
+        self._start = None
+
+    def _add_diagonal(self, triangle):
+        # identity of diaginal
+        diag = Side(triangle.u, triangle.w)
+        # mapping the triangulation
+        self._diagonals[diag] = triangle
+        self._add_triangle(triangle)
+
+    def _add_triangle(self, triangle):
+        # put the triangle in list
+        #self._triangles.append(triangle)
+        if self._start is None: self._start = triangle
+        # each side of each triangle can be related to:
+        # only one triangle (this side is part of original polygon) 
+        # or two triangles (this side is a diagonal, created by triangulation)
+        # map each side and correlated triangles
+        for side in triangle.sides():
+            tt = self._sides.get(side)
+            # side already mapped
+            if tt:
+                #if (tt[1]): # error condition
+                #    print "Error!"
+                # add this new correlated triangle (this side is a diagonal)
+                self._sides[side] = (tt[0], triangle)
+            else:
+                # this side has just appeared. it can be a diagonal, 
+                # but its opposite has not been triangulated yet
+                self._sides[side] = (triangle, None)
+
+    def get_start(self):
+        """ return the first triangle cretated in the last triangulation """
+        #return self._triangles[0]
+        return self._start
+
+    #def get_triangles(self):
+    #    """ return all triangles cretated in the last triangulation """
+    #    return self._triangles
+        
+    def get_diagonals(self):
+        """ return a list with all diagonals cretated in triangulation """
+        return self._diagonals.keys()
+
+    def get_neighbors(self, triangle):
+        """ return all neighbors (max 3) of a triangle """
+        # see get_opposite comments
+        neighbors = [] 
+        for side in triangle.sides():
+            neighbor = self.get_opposite(triangle, side)
+            if neighbor:
+                neighbors.append(neighbor)
+        return neighbors
+
+    def get_opposite(self, triangle, side):
+        """ return the opposite triangle of a given triangle side """
+        # check if given side is a diagonal
+        # this checking is kind of redundant, 
+        # because a side without other related triangle 
+        # returns None (by default) and is not a diagonal
+        # but, later we already known that is a diagonal  
+        #diagonal = self._diagonals.get(side)
+        #if diagonal:
+            # get its correlateds triangules (see _add_triangle comments)
+        tt = self._sides.get(side)
+        if tt:
+            # return opposite triangle (if exists) 
+            if tt[0] != triangle:
+                return tt[0]
+            elif tt[1]:
+                return tt[1]
+        return None
 
     def _set_indexes(self, v, n_points):
         """ Set indexes for triangulation based on v parameter """
@@ -39,54 +115,55 @@ class Triangulation(object):
 
     def process(self):
         """ Process and triangulates the polygon """
-
-        self._diagonals = []
+        # clear the current triangulation
+        self._clean()
         n_points = len(self._polygon)  # Controls the number of _polygon
         # Minimum number of _polygon to compose a triangle
         if n_points < 3:
             return False
 
         tmp_points = self._polygon[:]  # temporary list of _polygon
-        if self.area() < 0.0:
+        # this algorithm runs in Clockwise orientation...
+        if self._area() < 0.0:
             tmp_points.reverse()
 
-        # controls the current triangle _polygon inside the while statement
+        # controls the current triangle points inside the while statement
         v = n_points - 1
-        #u = v
-        attempts = (2 * n_points)
-        result = []
+        attempts = (n_points + 3)
         while n_points > 3:
 
             if not attempts:
-                self._diagonals = []
+                self._clean()
                 return False
             attempts -= 1
             
-            #starter = u
+            # start triangulation from the last triangulation point
+            # this is best in some cases (e.x. concave polygon)
+            # and worst in others (e.x. polygon with many inverses corners)...
+            #last_mark = v
             u, v, w = self._set_indexes(v, n_points)
 
             # Creates a Triangle object with three consecutives Point objects
             triangle = Triangle(tmp_points[u], tmp_points[v], tmp_points[w])
 
-            if self.snip(tmp_points, triangle):
-                self._diagonals.append((tmp_points[u].get_pos(), 
-                                        tmp_points[w].get_pos()))
-                result.append(triangle)  # Adding current triangle to result
-                tmp_points.remove(tmp_points[v])  # Removing current triangle
-                #u = starter
+            # check if this triangle can be cutted (snipped)
+            if self._snip(tmp_points, triangle):
+                # add current triangle to triangulation
+                self._add_diagonal(triangle) 
+                # remove triangle from polygon
+                tmp_points.remove(tmp_points[v])  
+                #v = last_mark # see above
+                # adjust the loop controls
                 n_points -= 1
-                attempts = (2 * n_points)
-
-        triangle = Triangle(tmp_points[2], tmp_points[1], tmp_points[0])
-        result.append(triangle)  # Adding last triangle to result
+                attempts = (n_points + 3)
+        # add last triangle to triangulation
+        triangle = Triangle(tmp_points[0], tmp_points[1], tmp_points[2])
+        self._add_triangle(triangle)
         del tmp_points
-        return result
+        return True
     
-    def get_diagonals(self):
-        return self._diagonals
-
-    def is_inside(self, point, triangle):
-        """ Verify if a given point belongs to a triangle inner area """
+    def _is_inside(self, point, triangle):
+        """ Verify if a given point belongs to a triangle inner _area """
 
         ax, ay = triangle.w.x - triangle.v.x, triangle.w.y - triangle.v.y
         bx, by = triangle.u.x - triangle.w.x, triangle.u.y - triangle.w.y
@@ -102,22 +179,24 @@ class Triangulation(object):
 
         return a_cross >= 0 and b_cross >= 0 and c_cross >= 0
 
-    def snip(self, points, triangle):
+    def _snip(self, points, triangle):
         """Return true if the polygon can be snipped """
 
         oppos = (triangle.v.x - triangle.u.x) * (triangle.w.y - triangle.u.y)
         adjac = (triangle.v.y - triangle.u.y) * (triangle.w.x - triangle.u.x)
 
+        # the triangle makes a inverse corner (open corner)?
         if self.EPSILON > (oppos - adjac):
+            # if so, then this triangle isn't a ear of polygon...
             return False
 
         # verify if the point belongs to the triangle
         for point in points:
-            if point not in triangle and self.is_inside(point, triangle):
+            if point not in triangle and self._is_inside(point, triangle):
                 return False
         return True
 
-    def area(self):
+    def _area(self):
         size = len(self._polygon)
         area = 0.0
         i0 = size -1
@@ -132,41 +211,42 @@ class Triangulation(object):
 # Testing the class
 if __name__ == "__main__":
 
-    points = [Point(0, 0, 6),
-              Point(11, 11, 6),
-              Point(2, 3, 0),
-              Point(4, 6, 1),
-              Point(1, 0, 0),
-              Point(5, 8, 0),
-              Point(13, 4, 3),
-              Point(6, 12, 0),
-              Point(7, 13, 2),
-              Point(8, 8, 2),
-              Point(9, 8, 4),
-              Point(10, 11, 4),
-              Point(3, 4, 1),
-              Point(12, 6, 6),
-              Point(14, 2, 6)]
-    
+    from art_gallery import ArtGallery
+
+    points = ArtGallery.load("inputs/test_0.poly")
+
     points.sort()
     triangulation = Triangulation(points)
-    triangles = triangulation.process()
+    triangulation.process()
     from coloring import Coloring
-    color = Coloring(points)
-    if triangles:
-        color.process(triangles)
-        i = 1
-        for t in triangles:
-            print "Triangle %d => (%s,%s)[%s] (%s,%s)[%s] (%s,%s)[%s]" \
-               % (i, t.u.x, t.u.y, color.get_color(t.u),
-                     t.v.x, t.v.y, color.get_color(t.v),
-                     t.w.x, t.w.y, color.get_color(t.w))
-            if points.count(t.v) != 1:
-                print "Where is v " + t.v
-            if points.count(t.u) != 1:
-                print "Where is u " + t.u
-            if points.count(t.w) != 1:
-                print "Where is w " + t.w
-            i += 1
-            
-            
+    color = Coloring(points, triangulation)
+    color.process()
+    i = 0
+    for p in triangulation._polygon:
+        i += 1
+        print "Point %d => %s"  % (i, p)
+    i = 0
+    for t in triangulation.get_triangles():
+        i += 1
+        print "Triangle %d => (%s,%s)[%s] (%s,%s)[%s] (%s,%s)[%s]" \
+           % (i, t.u.x, t.u.y, t.u.color,
+                 t.v.x, t.v.y, t.v.color,
+                 t.w.x, t.w.y, t.w.color)
+        if points.count(t.v) != 1:
+            print "Where is v " + t.v
+        if points.count(t.u) != 1:
+            print "Where is u " + t.u
+        if points.count(t.w) != 1:
+            print "Where is w " + t.w
+        ii = 0
+        for nt in triangulation.get_neighbors(t):
+            ii += 1
+            if (nt == t):
+                print "-- ERROR: Same Neighbor %d => %s" % (ii, nt)
+            else:
+                print "-- Neighbor %d => %s" % (ii, nt)
+    i = 0
+    for d in triangulation.get_diagonals():
+        i += 1
+        print "Diagonal %d => (%s,%s)" % (i, d[0], d[1])
+

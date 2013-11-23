@@ -1,8 +1,5 @@
-'''
-Created on 28/09/2013
+# -*- coding: utf-8 -*-
 
-@author: Gustavo Pantuza
-'''
 import time
 
 class Timer(object):

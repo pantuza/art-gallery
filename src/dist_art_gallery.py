@@ -27,7 +27,7 @@ class DistributedArtGallery(NodeAlgorithm):
 
             node.memory['neighbors_data'] = {}
             node._polygon = [node.memory['axis']]
-            node.gallery = ArtGallery(node.memory['axis'])
+            node.gallery = ArtGallery(node._polygon)
 
             # Fills node neighbors and notify each one its axis
             node.memory[self.neighborsKey] = \
@@ -46,8 +46,8 @@ class DistributedArtGallery(NodeAlgorithm):
                 self.procmsg(node, msg)
 
         except Exception as e:
-            raise Exception("Erro during processing message from node %s\n%s"
-                            % (node, e))
+            raise Exception("Erro during processing message from node %s"
+                            % node)
 
     def procmsg(self, node, msg):
         """ Process incoming messages """

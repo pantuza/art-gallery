@@ -1,13 +1,12 @@
-"""
-Preview of a Delaunay Triangulation and Voronoi Diagram using matplotlib.
-"""
+# -*- coding: utf-8 -*-
+
 from __future__ import division
 import random
 import threading 
-from preview import Preview, PreviewDefaults
-from preview_control import PreviewControl 
 from art_gallery import ArtGallery
+from preview_control import PreviewControl
 from art_gallery_painter import ArtGalleryPainter
+from preview import Preview, PreviewDefaults
 
 class TestProcess(threading.Thread):
     '''
@@ -26,6 +25,7 @@ class TestProcess(threading.Thread):
             self.id = TestProcess.num_threads
             TestProcess.num_threads += 1
             self._polygon = points[:]
+            ArtGalleryPainter.set_polygon(self._polygon)
             self.gallery = ArtGallery(self._polygon.pop(index_main_point))
         self.delay = delay
         self.big_delay = TestProcess._big_delay \
@@ -75,7 +75,7 @@ class TestCases(object):
                 
         self.preview_control.show(gallery, title = "Without cleanup")
 
-    # linux only (due to pygame)
+    # multiple tests
     def thread(self, points, preview):
         # configure
         threads = []
@@ -89,7 +89,19 @@ class TestCases(object):
 
         return threads
             
-    def do_test(self, file_name, s = 1, d = 1, mx = 0, my = 0):
+    # multiple tests
+    def thread1(self, points, preview):
+        # configure
+        threads = []
+        # create tests in different threads
+        test = TestProcess(points, 0, self.delay)
+        threads.append(test)
+        preview.add_view(test.gallery, str(0))
+        test.start()
+
+        return threads
+            
+    def do_test(self, file_name, s = 1, d = 0, mx = 0, my = 0):
         
         self.set_cenario(file_name)
         self.transform(s, s, d, d, mx, my)

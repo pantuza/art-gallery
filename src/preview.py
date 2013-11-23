@@ -1,6 +1,5 @@
-"""
-Preview of a Delaunay Triangulation and Voronoi Diagram using matplotlib.
-"""
+# -*- coding: utf-8 -*-
+
 from __future__ import division
 import pygame
 import threading
@@ -25,7 +24,7 @@ class Color(object):
     BLACK = pygame.Color(0,0,0, 255)
     WHITE = pygame.Color(255,255,255, 255)
 
-class Painter():
+class Painter(object):
     '''
     A simple painter
     A painter object must to have this interface:
