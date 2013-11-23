@@ -9,14 +9,17 @@ from pymote.simulation import Simulation
 from pymote.conf import global_settings
 
 from dist_art_gallery import DistributedArtGallery
-from window import Window
 from point import Point
-
+from preview import Preview
+from preview import PreviewDefaults
+from preview_control import PreviewControl
+from art_gallery_painter import ArtGalleryPainter
+from art_gallery import ArtGallery
 
 # Do not show log
-logging.config.dictConfig({'version': 1,'loggers':{}})
+logging.config.dictConfig({'version': 1, 'loggers': {}})
 
-#VoronoiDiagram.start()
+# VoronoiDiagram.start()
 global_settings.ENVIRONMENT2D_SHAPE = (500, 500)
 
 
@@ -27,31 +30,43 @@ except IndexError:
     print "No input file"
     exit()
 
-polygon = []
-
-# Opens input file and reads the polygon
-with open(file_name, "r") as file:
-
-    # Read the first line that contains the number of vertices
-    n_nodes = int(file.readline())
-    
-    for line in file:
-
-        id, x, y = line.split()
-        point = Point(id, x, y)
-        polygon.append(point)
-
+polygon = ArtGallery.load(file_name)
+n_nodes = len(polygon)
 
 # generates the network with 10 hosts
 net_gen = NetworkGenerator(n_count=n_nodes-1, n_min=1, n_max=n_nodes)
 net = net_gen.generate_random_network()
 
+ArtGalleryPainter.set_polygon(polygon)
+
+label = "Distributed Solution for Art Gallery Problem"
+
+max_x = 0
+max_y = 0
+for p in polygon:
+    if (p.x > max_x):
+        max_x = p.x
+    if (p.y > max_y):
+        max_y = p.y
+
+lines = PreviewDefaults.height // (max_y + 20)
+columns = PreviewDefaults.width // (max_x + 20)
+
+fps = 0
+
+# Starts the graphical interface
+PreviewControl.start(title=label,
+                     lines=lines,
+                     columns=columns,
+                     fps_limit=fps,
+                     painter_class=ArtGalleryPainter)
+
 
 # Defines the network algorithm
-net.algorithms = ((DistributedArtGallery, {'key':'axis'}),)
+net.algorithms = ((DistributedArtGallery, {'key': 'axis'}),)
 
 
-i=0
+i = 0
 # Assign to node memory its position
 for node in net.nodes():
 
@@ -63,20 +78,8 @@ for node in net.nodes():
 sim = Simulation(net)
 sim.run()
 
-# Show the State of the Voronoi Algorith execution
-#print net.algorithmState
 
-window = Window()
-window.set_title("Distributed Solution for Art Gallery Problem")
+while PreviewControl.in_state(Preview.RUNNING):
+    pass
 
-# Plot voronoi diagram for each node
-for node in net.nodes():
-    
-    try:
-        print node.memory['axis']
-    except AttributeError:
-        print "%s Insufficient number of nodes to compute art gallery" % node
-
-
-#VoronoiDiagram.stop()
 sim.reset()
