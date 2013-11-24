@@ -44,6 +44,12 @@ label = "Distributed Solution for Art Gallery Problem"
 max_x = 0
 max_y = 0
 for p in polygon:
+    
+    # Correction on polygon draw on window
+    if n_nodes < 7:
+        p.x = ((p.x + 0) * 20) + 0
+        p.y = ((p.y + 0) * 20) + 10
+
     if (p.x > max_x):
         max_x = p.x
     if (p.y > max_y):
