@@ -84,7 +84,7 @@ for node in net.nodes():
 sim = Simulation(net)
 sim.run()
 
-
+# Keep the main execution
 while PreviewControl.in_state(Preview.RUNNING):
     pass
 
